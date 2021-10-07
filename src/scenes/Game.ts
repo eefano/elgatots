@@ -1,9 +1,15 @@
 import Phaser from 'phaser';
 
+type Mob = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+
 type Posa = {
   img:string;
   xof:integer;
   yof:integer;
+}
+
+class Clock {
+  constructor(public shootchances:integer) {}
 }
 
 export default class Demo extends Phaser.Scene {
@@ -16,11 +22,19 @@ export default class Demo extends Phaser.Scene {
   private enemies!:Phaser.GameObjects.Group;
   private cat!:Phaser.Physics.Arcade.Sprite;
   private pose!:{[key:string]: Posa};
+  private cursors!:Phaser.Types.Input.Keyboard.CursorKeys;
 
-  cat_vs_enemies(cat, enemy)
+  cat_vs_enemies(cat:
+                 /*   Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | */
+                     Phaser.Types.Physics.Arcade.GameObjectWithBody , 
+                enemy:
+               /* Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | */
+                Phaser.Types.Physics.Arcade.GameObjectWithBody )
   {
-      enemy.disableBody(true,true);
+    
+    (enemy as Mob).disableBody(true,true);
       
+    (enemy as Mob).getData('collision');
   }
 
   preload() {
@@ -108,9 +122,9 @@ export default class Demo extends Phaser.Scene {
     this.cat.play('catwalk');
     //this.cat.setTexture('cake_1');
 
-    this.physics.add.collider(this.cat,this.enemies,this.cat_vs_enemies);
+    this.physics.add.overlap(this.cat,this.enemies,this.cat_vs_enemies);
     
-    //this.cursors=this.input.keyboard.createCursorKeys();
+    this.cursors=this.input.keyboard.createCursorKeys();
   
 
    // this.sound.playAudioSprite('boom');   
@@ -133,8 +147,17 @@ export default class Demo extends Phaser.Scene {
 
       while(!this.enemies.isFull())
       {
-          this.enemies.add(this.physics.add.sprite(100,100,'sveglia_1').play('clockwalk'));
+          this.enemies.add(
+            this.physics.add.sprite(100,100,'sveglia_1')
+            .play('clockwalk')
+            .setData('logic',new Clock(0)));
       }
+
+      if(this.cursors.left.isDown) this.cat.setX(this.cat.x-1);
+      if(this.cursors.right.isDown) this.cat.setX(this.cat.x+1);
+      if(this.cursors.up.isDown) this.cat.setY(this.cat.y-1);
+      if(this.cursors.down.isDown) this.cat.setY(this.cat.y+1);
+
   }
    
 }
